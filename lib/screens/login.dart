@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:furniture_app/screens/register.dart';
@@ -5,6 +6,7 @@ import 'package:furniture_app/services/auth.dart';
 import 'package:gap/gap.dart';
 
 import '../layouts.dart';
+import '../utils/custom_snack_bar.dart';
 import 'home.dart';
 
 
@@ -21,14 +23,15 @@ class _LoginState extends State<Login> {
   TextEditingController mailTextEditing = TextEditingController();
 
   TextEditingController passTextEditing = TextEditingController();
-  signIn()async{
+  /*signIn()async{
    try {
      String res=await AuthMethods().signIn(mail: mailTextEditing.text, pass: passTextEditing.text);
-     if(res=="success"){print("done");}else{print(res);}
+     if(res=="success"){print("done");
+     }else{print(res);}
    } on Exception catch (e) {
     print(e);
    }
-  }
+  }*/
 
   var formKey = GlobalKey<FormState>();
 
@@ -102,7 +105,8 @@ class _LoginState extends State<Login> {
                               return "this filed must be filled";
                             } else if (value!.length < 5) {
                               return "the password is too short";
-                            } else {
+                            }
+                            else {
                               return null;
                             }
                           },
@@ -148,7 +152,7 @@ class _LoginState extends State<Login> {
                                   shadowColor: Theme.of(context).colorScheme.shadow,
                                 ),
                                 onPressed: () async {
-                                  signIn();
+                                  /*signIn();
                                   if (formKey.currentState!.validate()) {
                                     print(mailTextEditing.text);
                                     print(passTextEditing.text);
@@ -158,7 +162,34 @@ class _LoginState extends State<Login> {
                                       MaterialPageRoute(
                                           builder: (context) => Layout()),
                                     );
+                                  }*/
+                                  if (formKey.currentState!.validate()) {
+                                    try {
+                                      await FirebaseAuth.instance.signInWithEmailAndPassword(
+                                          email: mailTextEditing.text,
+                                          password: passTextEditing.text
+                                      );
+                                      Navigator.pushReplacement(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) => const Layout()),
+                                      );
+                                    } on FirebaseAuthException catch (e) {
+                                      if (e.code == 'user-not-found') {
+                                        customSnackBar(context, "No user found for that email.");
+                                      } else if (e.code == 'wrong-password') {
+                                        customSnackBar(context, "Wrong password provided for that user.");
+                                      }
+                                      else{
+                                        customSnackBar(context, "No user found for that email.");
+                                      }
+                                    }
+                                    catch (e) {
+                                      customSnackBar(context, e.toString());
+                                    }
                                   }
+
+
                                 },
                                 child:  Text(
                                   "Login".toUpperCase(),

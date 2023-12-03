@@ -35,8 +35,8 @@ class _LayoutState extends State<Layout> {
           pageCon.jumpToPage(value);
         }),
         selectedIndex: currentIndex,
-        indicatorColor:  Theme.of(context).colorScheme.primary.withOpacity(0.2),
-        backgroundColor:  Theme.of(context).colorScheme.primaryContainer.withOpacity(0.2),
+        indicatorColor:  Theme.of(context).colorScheme.primary.withOpacity(0.2)
+       , backgroundColor:  Theme.of(context).colorScheme.primaryContainer.withOpacity(0.2),
         destinations: [
           NavigationDestination(
             icon: Icon(Icons.home),

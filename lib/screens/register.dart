@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -5,6 +6,7 @@ import 'package:gap/gap.dart';
 
 import '../layouts.dart';
 import '../services/auth.dart';
+import '../utils/custom_snack_bar.dart';
 import 'home.dart';
 import 'login.dart';
 
@@ -25,7 +27,7 @@ class _RegisterState extends State<Register> {
 
   TextEditingController passTextEditing = TextEditingController();
 
-  register() async {
+  /*register() async {
     try {
       String res = await AuthMethods().signUp(
           name: userTextEditing.text,
@@ -34,13 +36,14 @@ class _RegisterState extends State<Register> {
           confirmPass: confirmTextEditing.text);
       if (res == "success") {
 
+
       } else {
         print(res);
       }
     } on Exception catch (e) {
       print(e);
     }
-  }
+  }*/
 
   var formKey = GlobalKey<FormState>();
 
@@ -156,9 +159,7 @@ class _RegisterState extends State<Register> {
                                     isvisible = !isvisible;
                                   });
                                 },
-                                icon: Icon(isvisible
-                                    ? Icons.visibility
-                                    : Icons.visibility_off))),
+                                icon: Icon(isvisible ? Icons.visibility : Icons.visibility_off))),
                       ),
                       const Gap(20),
                       TextFormField(
@@ -167,7 +168,10 @@ class _RegisterState extends State<Register> {
                             return "this filed must be filled";
                           } else if (value!.length < 5) {
                             return "the password is too short";
-                          } else {
+                          }else if(passTextEditing.text!=confirmTextEditing.text){
+                            return "Password isn't identical";
+                         }
+                          else {
                             return null;
                           }
                         },
@@ -208,7 +212,7 @@ class _RegisterState extends State<Register> {
                                     Theme.of(context).colorScheme.shadow,
                               ),
                               onPressed: () async {
-                                if (formKey.currentState!.validate()) {
+                                /*if (formKey.currentState!.validate()) {
                                   register();
                                   print(mailTextEditing.text);
                                   print(passTextEditing.text);
@@ -218,7 +222,29 @@ class _RegisterState extends State<Register> {
                                     MaterialPageRoute(
                                         builder: (context) => Layout()),
                                   );
+                                }*/
+                                if (formKey.currentState!.validate()) {
+                                  try {
+                                    await FirebaseAuth.instance.createUserWithEmailAndPassword(
+                                      email: mailTextEditing.text,
+                                      password: passTextEditing.text,
+                                    );
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => const Layout()),
+                                    );
+                                  } on FirebaseAuthException catch (e) {
+                                    if (e.code == 'weak-password') {
+                                      customSnackBar(context, "The password provided is too weak.");
+                                    } else if (e.code == 'email-already-in-use') {
+                                      customSnackBar(context, "The account already exists for that email.");
+                                    }
+                                  } catch (e) {
+                                    customSnackBar(context, e.toString());
+                                  }
                                 }
+
                               },
                               child: const Text(
                                 "Agree and register",
